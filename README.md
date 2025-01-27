@@ -78,7 +78,7 @@ class TestDrive
         
         $folderId = $drive->createFolder('test', config('google-drive.parent_folder_id'));
         
-        $fileId = $drive->createFile(
+        $fileId = $drive->uploadFile(
             $folderId,
             'file_uploaded.txt',
             file_get_contents(storage_path('file.txt')),
