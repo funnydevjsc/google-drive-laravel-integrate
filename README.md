@@ -1,6 +1,6 @@
 # Google Drive Laravel
 
-The free Laravel package to help you integrate data with GA4
+The free Laravel package to help you manage your Google Drive
 
 ## Use Cases
 
