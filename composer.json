@@ -1,0 +1,40 @@
+{
+    "name": "funnydevjsc/google-drive-laravel-integrate",
+    "description": "Laravel package for Google Drive management",
+    "type": "library",
+    "license": "MIT",
+    "version": "1.0.0",
+    "autoload": {
+        "psr-4": {
+            "FunnyDev\\GoogleDrive\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Funny dev., Jsc",
+            "email": "contact@funnydev.vn",
+            "homepage": "https://github.com/funnydevjsc"
+        }
+    ],
+    "homepage": "https://github.com/funnydevjsc/google-drive-laravel-integrate",
+    "keywords": ["Laravel", "package", "drive", "google", "gdrive"],
+    "require": {
+        "php": "^8.1",
+        "funnydevjsc/google-client-laravel-integrate": "^1.0"
+    },
+    "require-dev": {
+        "illuminate/support": "^8.83",
+        "illuminate/http": "^8.83",
+        "illuminate/routing": "^8.83",
+        "illuminate/console": "^8.83"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "FunnyDev\\GoogleDrive\\GoogleDriveServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
