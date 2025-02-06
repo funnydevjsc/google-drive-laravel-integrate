@@ -6,6 +6,7 @@ use FunnyDev\GoogleClient\GoogleServiceClient;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
+use GuzzleHttp\Psr7\Utils;
 
 class GoogleDriveSdk
 {
@@ -105,21 +106,85 @@ class GoogleDriveSdk
     /**
      * @throws \Google\Service\Exception
      */
-    public function deleteFile(string $fileId): bool
+    public function downloadFile(string $fileId): mixed
     {
-        try {
-            return boolval($this->drive->files->delete($fileId));
-        } catch (\Google\Service\Exception) {}
-        return false;
+        $response = $this->drive->files->get($fileId, ['alt' => 'media']);
+        return $response->getBody()->getContents();
     }
 
     /**
      * @throws \Google\Service\Exception
      */
-    public function downloadFile(string $fileId): mixed
+    public function streamDownloadFile(string $fileId, string $fileName, string $mimeType='application/octet-stream'): mixed
     {
+        ini_set('zlib.output_compression', 'Off');
+        if (function_exists('apache_setenv')) {
+            apache_setenv('no-gzip', '1');
+        }
+        ini_set('output_buffering', 'Off');
+        ini_set('implicit_flush', 1);
+
         $response = $this->drive->files->get($fileId, ['alt' => 'media']);
-        return $response->getBody()->getContents();
+        $fileStream = Utils::streamFor($response->getBody());
+
+        return response()->stream(function () use ($fileStream) {
+            while (!$fileStream->eof()) {
+                echo $fileStream->read(1024 * 64);
+                flush();
+            }
+        }, 200, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
+            'Accept-Ranges' => 'bytes'
+        ]);
+    }
+
+    /**
+     * @throws \Google\Service\Exception
+     */
+    public function streamDownloadVideoToHls(string $fileId, string $fileName='stream', int $splitSeconds=10): mixed
+    {
+        ini_set('zlib.output_compression', 'Off');
+        if (function_exists('apache_setenv')) {
+            apache_setenv('no-gzip', '1');
+        }
+        ini_set('output_buffering', 'Off');
+        ini_set('implicit_flush', 1);
+
+        $response = $this->drive->files->get($fileId, ['alt' => 'media']);
+        $fileStream = Utils::streamFor($response->getBody());
+
+        $cmd = "ffmpeg -i pipe:0 -c:v copy -c:a copy -f hls -hls_time '.$splitSeconds.' -hls_playlist_type vod pipe:1";
+        $descriptors = [
+            ['pipe', 'r'],
+            ['pipe', 'w'],
+            ['pipe', 'w']
+        ];
+
+        $process = proc_open($cmd, $descriptors, $pipes);
+
+        if (is_resource($process)) {
+            while (!$fileStream->eof()) {
+                fwrite($pipes[0], $fileStream->read(1024 * 8));
+            }
+            fclose($pipes[0]);
+
+            return response()->stream(function () use ($pipes, $process) {
+                while (!feof($pipes[1])) {
+                    echo fread($pipes[1], 1024 * 8);
+                    flush();
+                }
+
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+                proc_close($process);
+            }, 200, [
+                'Content-Type' => 'application/vnd.apple.mpegurl',
+                'Content-Disposition' => 'inline; filename="'.$fileName.'.m3u8"',
+            ]);
+        }
+
+        return false;
     }
 
     /**
