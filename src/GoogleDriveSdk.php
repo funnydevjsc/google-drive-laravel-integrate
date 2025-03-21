@@ -115,7 +115,7 @@ class GoogleDriveSdk
     /**
      * @throws \Google\Service\Exception
      */
-    public function streamDownloadFile(string $fileId, string $fileName, string $mimeType='application/octet-stream'): mixed
+    public function streamDownloadFile(string $fileId, string $fileName, string $mimeType = 'application/octet-stream', mixed $range=null)
     {
         ini_set('zlib.output_compression', 'Off');
         if (function_exists('apache_setenv')) {
@@ -126,6 +126,29 @@ class GoogleDriveSdk
 
         $response = $this->drive->files->get($fileId, ['alt' => 'media']);
         $fileStream = Utils::streamFor($response->getBody());
+        $fileSize = $fileStream->getSize();
+
+        if (!$range) {
+            $range = request()->header('Range');
+        }
+        if ($range) {
+            preg_match('/bytes=(\d+)-(\d+)?/', $range, $matches);
+            $start = intval($matches[1]);
+            $end = isset($matches[2]) ? intval($matches[2]) : $fileSize - 1;
+
+            $fileStream->seek($start);
+            $length = ($end - $start) + 1;
+
+            return response()->stream(function () use ($fileStream, $length) {
+                echo $fileStream->read($length);
+                flush();
+            }, 206, [
+                'Content-Type' => $mimeType,
+                'Content-Length' => $length,
+                'Content-Range' => "bytes $start-$end/$fileSize",
+                'Accept-Ranges' => 'bytes',
+            ]);
+        }
 
         return response()->stream(function () use ($fileStream) {
             while (!$fileStream->eof()) {
@@ -134,8 +157,9 @@ class GoogleDriveSdk
             }
         }, 200, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'attachment; filename="'.$fileName.'"',
-            'Accept-Ranges' => 'bytes'
+            'Content-Length' => $fileSize,
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Accept-Ranges' => 'bytes',
         ]);
     }
 
