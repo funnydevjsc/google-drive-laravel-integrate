@@ -37,7 +37,7 @@ class GoogleDriveSdk
             $folderMetadata['parents'] = [$parentFolderId];
         }
         $fileMetadata = new Drive\DriveFile($folderMetadata);
-        $folder = $this->drive->files->create($fileMetadata, array('fields' => 'id'));
+        $folder = $this->drive->files->create($fileMetadata, array('fields' => 'id', 'supportsAllDrives' => true));
         return $folder->id;
     }
 
@@ -72,7 +72,7 @@ class GoogleDriveSdk
      */
     public function deleteResource(string $resourceId): bool
     {
-        return boolval($this->drive->files->delete($resourceId));
+        return boolval($this->drive->files->delete($resourceId, ['supportsAllDrives' => true]));
     }
 
     /**
@@ -83,7 +83,7 @@ class GoogleDriveSdk
             'name' => $name,
             'parents' => array($parentFolderId)
         ));
-        $file = $this->drive->files->create($fileMetadata, array('data' => $content, 'mimeType' => $mimeType, 'uploadType' => 'multipart', 'fields' => 'id'));
+        $file = $this->drive->files->create($fileMetadata, array('data' => $content, 'mimeType' => $mimeType, 'uploadType' => 'multipart', 'fields' => 'id', 'supportsAllDrives' => true));
         return $file->id;
     }
 
@@ -98,7 +98,8 @@ class GoogleDriveSdk
         $file = $this->drive->files->update($fileId, $emptyFileMetadata, array(
             'addParents' => $newParentFolderId,
             'removeParents' => $previousParents,
-            'fields' => 'id, parents'
+            'fields' => 'id, parents',
+            'supportsAllDrives' => true
         ));
         return !!empty($file->parents);
     }
@@ -216,6 +217,6 @@ class GoogleDriveSdk
      */
     public function emptyTrash(): bool
     {
-        return boolval($this->drive->files->emptyTrash());
+        return boolval($this->drive->files->emptyTrash(['supportsAllDrives' => true]));
     }
 }
