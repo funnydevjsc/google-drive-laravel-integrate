@@ -3,7 +3,7 @@
     "description": "Laravel package for Google Drive management",
     "type": "library",
     "license": "MIT",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "autoload": {
         "psr-4": {
             "FunnyDev\\GoogleDrive\\": "src/"
@@ -19,7 +19,7 @@
     "homepage": "https://github.com/funnydevjsc/google-drive-laravel-integrate",
     "keywords": ["Laravel", "package", "drive", "google", "gdrive"],
     "require": {
-        "php": "^8.1",
+        "php": "^8.1|^8.2|^8.3|^8.4",
         "funnydevjsc/google-client-laravel-integrate": "^1.0"
     },
     "require-dev": {

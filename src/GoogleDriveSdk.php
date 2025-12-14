@@ -6,7 +6,10 @@ use FunnyDev\GoogleClient\GoogleServiceClient;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
+use Google\Service\Drive\Permission;
+use Google\Service\Exception as GoogleException;
 use GuzzleHttp\Psr7\Utils;
+use Exception;
 
 class GoogleDriveSdk
 {
@@ -14,8 +17,8 @@ class GoogleDriveSdk
     protected Drive $drive;
 
     /**
-     * @throws \Exception
-     * @throws \Google\Service\Exception
+     * @throws Exception
+     * @throws GoogleException
      */
     public function __construct(array $credentials=null, string $credentials_path=null)
     {
@@ -25,7 +28,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function createFolder(string $name, string $parentFolderId=''): string
     {
@@ -40,9 +43,9 @@ class GoogleDriveSdk
         $folder = $this->drive->files->create($fileMetadata, array('fields' => 'id', 'supportsAllDrives' => true));
         return $folder->id;
     }
-
+    
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function readFolder(string $folderId): array
     {
@@ -68,7 +71,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function deleteResource(string $resourceId): bool
     {
@@ -76,7 +79,22 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
+     */
+    public function shareResource(string $resourceId, string $email, string $role='writer', bool $allowFileDiscovery=true): void
+    {
+        $this->drive->permissions->create($resourceId, new Permission([
+            'type' => 'user',
+            'role' => $role,
+            'emailAddress' => $email,
+            'allowFileDiscovery' => $allowFileDiscovery,
+        ]), ['sendNotificationEmail' => false, 'supportsAllDrives' => true]);
+    }
+
+
+
+    /**
+     * @throws GoogleException
      */
     public function uploadFile(string $parentFolderId, string $name, mixed $content, string $mimeType='application/octet-stream'): string {
         $fileMetadata = new Drive\DriveFile(array(
@@ -88,7 +106,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function moveFile(string $fileId, string $newParentFolderId): bool
     {
@@ -105,7 +123,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function downloadFile(string $fileId): mixed
     {
@@ -114,7 +132,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function streamDownloadFile(string $fileId, string $fileName, string $mimeType = 'application/octet-stream', mixed $range=null)
     {
@@ -165,7 +183,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function streamDownloadVideoToHls(string $fileId, string $fileName='stream', int $splitSeconds=10): mixed
     {
@@ -213,7 +231,7 @@ class GoogleDriveSdk
     }
 
     /**
-     * @throws \Google\Service\Exception
+     * @throws GoogleException
      */
     public function emptyTrash(): bool
     {
