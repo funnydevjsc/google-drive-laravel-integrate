@@ -23,11 +23,15 @@
         "funnydevjsc/google-client-laravel-integrate": "^1.0"
     },
     "require-dev": {
-        "illuminate/support": "^8.83",
-        "illuminate/http": "^8.83",
-        "illuminate/routing": "^8.83",
-        "illuminate/console": "^8.83"
-    },
+    "illuminate/support": "^8.83",
+    "illuminate/http": "^8.83",
+    "illuminate/routing": "^8.83",
+    "illuminate/console": "^8.83",
+    "phpunit/phpunit": "^10.5"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
+  },
     "extra": {
         "laravel": {
             "providers": [
