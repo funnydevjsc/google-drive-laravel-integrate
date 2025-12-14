@@ -85,7 +85,7 @@ class TestDrive
             'text/plain'
         );
         
-        $drive->shareResource($fileId, 'test@example.com', 'writer', true);
+        $drive->shareResource($fileId, 'test@example.com', 'writer');
         
         $file = $drive->downloadFile($fileId);
         file_put_contents(storage_path('file_downloaded.txt'), $file);
