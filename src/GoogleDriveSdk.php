@@ -81,13 +81,12 @@ class GoogleDriveSdk
     /**
      * @throws GoogleException
      */
-    public function shareResource(string $resourceId, string $email, string $role='writer', bool $allowFileDiscovery=true): void
+    public function shareResource(string $resourceId, string $email, string $role='writer'): void
     {
         $this->drive->permissions->create($resourceId, new Permission([
             'type' => 'user',
             'role' => $role,
             'emailAddress' => $email,
-            'allowFileDiscovery' => $allowFileDiscovery,
         ]), ['sendNotificationEmail' => false, 'supportsAllDrives' => true]);
     }
 
